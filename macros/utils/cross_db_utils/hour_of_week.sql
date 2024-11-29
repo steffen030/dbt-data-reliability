@@ -30,3 +30,11 @@
     0 , 'Sunday'
     ) as {{ elementary.edr_type_string() }}),  cast(HOUR({{ date_expr }}) as {{ elementary.edr_type_string() }}))
 {% endmacro %}
+
+{% macro athena__edr_hour_of_week_expression(date_expr) %}
+    DATE_FORMAT({{ date_expr }}, '%W%H')
+{% endmacro %}
+
+{% macro trino__edr_hour_of_week_expression(date_expr) %}
+    date_format({{ date_expr }}, '%W%H')
+{% endmacro %}

@@ -29,8 +29,11 @@
     'disable_test_alerts': false,
     'disable_source_freshness_alerts': false,
     'disable_run_results': false,
+    'disable_freshness_results': false,
     'disable_tests_results': false,
     'disable_dbt_artifacts_autoupload': false,
+    'disable_dbt_columns_autoupload': false,
+    'upload_only_columns_with_descriptions': true,
     'disable_dbt_invocation_autoupload': false,
     'disable_skipped_model_alerts': true,
     'disable_skipped_test_alerts': true,
@@ -42,27 +45,44 @@
     'edr_monitors': elementary.get_default_monitors(),
     'long_string_size': 65535,
     'collect_model_sql': true,
-    'model_sql_max_size': 10240,
     'query_max_size': 1000000,
-    'insert_rows_method': 'max_query_size',
     'upload_artifacts_method': 'diff',
     'project_name': none,
     'elementary_full_refresh': false,
-    'min_training_set_size': 14,
+    'min_training_set_size': 7,
     'cache_artifacts': true,
     'anomaly_direction': 'both',
     'store_result_rows_in_own_table': true,
     'mute_dbt_upgrade_recommendation': false,
+    'mute_ensure_materialization_override': false,
     'calculate_failed_count': true,
     'tests_use_temp_tables': false,
-    'collect_metrics': true,
-    'upload_dbt_columns': false,
     'clean_elementary_temp_tables': true,
+    'force_metrics_backfill': false,
+    'ignore_small_changes': {
+      'spike_failure_percent_threshold': none,
+      'drop_failure_percent_threshold': none
+    },
+    'include_other_warehouse_specific_columns': false,
+    'fail_on_zero': false,
+    'anomaly_exclude_metrics': none
   } %}
   {{- return(default_config) -}}
 {%- endmacro -%}
 
 {%- macro bigquery__get_default_config() -%}
+    {% set default_config = elementary.default__get_default_config() %}
+    {% do default_config.update({'query_max_size': 250000}) %}
+    {{- return(default_config) -}}
+{%- endmacro -%}
+
+{%- macro athena__get_default_config() -%}
+    {% set default_config = elementary.default__get_default_config() %}
+    {% do default_config.update({'query_max_size': 250000}) %}
+    {{- return(default_config) -}}
+{%- endmacro -%}
+
+{%- macro trino__get_default_config() -%}
     {% set default_config = elementary.default__get_default_config() %}
     {% do default_config.update({'query_max_size': 250000}) %}
     {{- return(default_config) -}}

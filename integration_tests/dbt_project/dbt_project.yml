@@ -6,7 +6,7 @@ profile: "elementary_tests"
 model-paths: ["models"]
 analysis-paths: ["analyses"]
 test-paths: ["tests"]
-seed-paths: ["data"]
+seed-paths: ["data", "seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
@@ -18,6 +18,7 @@ clean-targets: # directories to be removed by `dbt clean`
 
 vars:
   debug_logs: "{{ env_var('DBT_EDR_DEBUG', False) }}"
+  mute_ensure_materialization_override: true
 
 models:
   elementary_tests:
@@ -26,3 +27,4 @@ models:
 
   elementary:
     +schema: elementary
+    +enabled: "{{ var('elementary_enabled', True) }}"

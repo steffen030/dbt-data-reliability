@@ -1,4 +1,4 @@
-{% macro dump_table(model_unique_id, output_path, exclude_deprecated_columns=true, timestamp_column=none, since=none, days_back=7, dedup=false) %}
+{% macro dump_table(model_unique_id, output_path, exclude_deprecated_columns=true, timestamp_column=none, since=none, days_back=7, dedup=false, until=none) %}
     {% set node = graph.nodes.get(model_unique_id) %}
     {% if not node %}
         {% do print("Node '{}' does not exist.".format(model_unique_id)) %}
@@ -17,7 +17,7 @@
         {% set column_names = column_names | reject("in", deprecated_column_names) | list %}
     {% endif %}
 
-    {% set dedup_by_column = "unique_id" %}
+    {% set dedup_by_column = node.meta.dedup_by_column or "unique_id" %}
     {% set order_by_dedup_column = "generated_at" %}
     {% set query %}
         {% if dedup and (dedup_by_column in column_names) and (order_by_dedup_column in column_names) %}
@@ -28,6 +28,9 @@
         {% if timestamp_column %}
             {% if since %}
                 where {{ elementary.edr_cast_as_timestamp(timestamp_column) }} > {{ elementary.edr_cast_as_timestamp(elementary.edr_quote(since)) }}
+                {% if until %}
+                  and {{ elementary.edr_cast_as_timestamp(timestamp_column) }} <= {{ elementary.edr_cast_as_timestamp(elementary.edr_quote(until)) }}
+                {% endif %}
             {% else %}
                 where {{ elementary.edr_datediff(elementary.edr_cast_as_timestamp(timestamp_column), elementary.edr_current_timestamp(), 'day') }} < {{ days_back }}
             {% endif %}

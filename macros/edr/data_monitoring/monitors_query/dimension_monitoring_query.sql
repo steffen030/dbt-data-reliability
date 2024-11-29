@@ -1,9 +1,10 @@
-{% macro dimension_monitoring_query(monitored_table, monitored_table_relation, dimensions, min_bucket_start, max_bucket_end, test_configuration, metric_properties) %}
-    {% set metric_name = 'dimension' %}
+{% macro dimension_monitoring_query(monitored_table, monitored_table_relation, dimensions, min_bucket_start, max_bucket_end, metric_properties, metric_name=none) %}
+    {% set metric_name = metric_name or 'dimension' %}
     {% set full_table_name_str = elementary.edr_quote(elementary.relation_to_full_name(monitored_table_relation)) %}
     {% set dimensions_string = elementary.join_list(dimensions, '; ') %}
     {% set concat_dimensions_sql_expression = elementary.list_concat_with_separator(dimensions, '; ') %}
     {% set timestamp_column = metric_properties.timestamp_column %}
+    {%- set data_monitoring_metrics_relation = elementary.get_elementary_relation('data_monitoring_metrics') %}
 
     with filtered_monitored_table as (
         select *,
@@ -40,7 +41,7 @@
                 dimension_value,
                 metric_value,
                 row_number () over (partition by dimension_value order by bucket_end desc) as row_number
-            from {{ ref('data_monitoring_metrics') }}
+            from {{ data_monitoring_metrics_relation }}
             where full_table_name = {{ full_table_name_str }}
                 and metric_name = {{ elementary.edr_quote(metric_name) }}
                 and metric_properties = {{ elementary.dict_to_quoted_json(metric_properties) }}
@@ -53,7 +54,6 @@
                 min(bucket_end) as dimension_min_bucket_end,
                 sum(metric_value)
             from all_dimension_metrics
-            where row_number <= {{ test_configuration.min_training_set_size }}
             group by 1,2
             {# Remove outdated dimension values (dimensions with all metrics of 0 in the range of the test time) #}
             having sum(metric_value) > 0
@@ -126,6 +126,7 @@
             {{ elementary.edr_cast_as_string(full_table_name_str) }} as full_table_name,
             {{ elementary.null_string() }} as column_name,
             metric_name,
+            {{ elementary.const_as_string("row_count") }} as metric_type,
             {{ elementary.edr_cast_as_float('metric_value') }} as metric_value,
             source_value,
             edr_bucket_start as bucket_start,
@@ -148,7 +149,7 @@
                 dimension_value,
                 metric_value,
                 row_number () over (partition by dimension_value order by bucket_end desc) as row_number
-            from {{ ref('data_monitoring_metrics') }}
+            from {{ data_monitoring_metrics_relation }}
             where full_table_name = {{ full_table_name_str }}
                 and metric_name = {{ elementary.edr_quote(metric_name) }}
                 and metric_properties = {{ elementary.dict_to_quoted_json(metric_properties) }}
@@ -159,7 +160,6 @@
                 dimension_value,
                 sum(metric_value)
             from all_dimension_metrics
-            where row_number <= {{ test_configuration.min_training_set_size }}
             group by 1
             {# Remove outdated dimension values (dimensions with all metrics of 0 in the range of the test time) #}
             having sum(metric_value) > 0
@@ -196,6 +196,7 @@
                 {{ elementary.edr_cast_as_string(full_table_name_str) }} as full_table_name,
                 {{ elementary.null_string() }} as column_name,
                 {{ elementary.const_as_string(metric_name) }} as metric_name,
+                {{ elementary.const_as_string("row_count") }} as metric_type,
                 {{ elementary.edr_cast_as_float('row_count_value') }} as metric_value,
                 {{ elementary.null_string() }} as source_value,
                 {{ elementary.null_timestamp() }} as bucket_start,
@@ -213,6 +214,7 @@
             'full_table_name',
             'column_name',
             'metric_name',
+            'metric_type',
             'dimension',
             'dimension_value',
             'bucket_end',
@@ -220,6 +222,7 @@
         full_table_name,
         column_name,
         metric_name,
+        metric_type,
         metric_value,
         source_value,
         bucket_start,

@@ -53,3 +53,19 @@
 {% macro clickhouse__edr_current_timestamp_in_utc() %}
     toDateTime(toUInt32(toUnixTimestamp(now()) - 7 * 86400))
 {% endmacro %}
+
+{% macro athena__edr_current_timestamp() -%}
+    CURRENT_TIMESTAMP
+{%- endmacro -%}
+
+{% macro athena__edr_current_timestamp_in_utc() -%}
+    cast(CURRENT_TIMESTAMP AT TIME ZONE 'utc' AS TIMESTAMP)
+{%- endmacro -%}
+
+{% macro trino__edr_current_timestamp() -%}
+    current_timestamp(6)
+{%- endmacro -%}
+
+{% macro trino__edr_current_timestamp_in_utc() -%}
+    cast(current_timestamp at time zone 'UTC' as timestamp(6))
+{%- endmacro -%}
