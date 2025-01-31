@@ -1,0 +1,105 @@
+<clickhouse replace="true">
+    <allow_experimental_cluster_discovery>1</allow_experimental_cluster_discovery>
+    <logger>
+        <level>debug</level>
+        <log>/var/log/clickhouse-server/clickhouse-server.log</log>
+        <errorlog>/var/log/clickhouse-server/clickhouse-server.err.log</errorlog>
+        <size>1000M</size>
+        <count>3</count>
+    </logger>
+    <query_log>
+	<database>system</database>
+	<table>query_log</table>
+	<partition_by>toYYYYMM(event_date)</partition_by>
+	 <!-- Interval of flushing data. -->
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+        <!-- Maximal size in lines for the logs. When non-flushed logs amount reaches max_size, logs dumped to the disk. -->
+        <max_size_rows>1048576</max_size_rows>
+        <!-- Pre-allocated size in lines for the logs. -->
+        <reserved_size_rows>8192</reserved_size_rows>
+        <!-- Lines amount threshold, reaching it launches flushing logs to the disk in background. -->
+        <buffer_size_rows_flush_threshold>524288</buffer_size_rows_flush_threshold>
+        <!-- Indication whether logs should be dumped to the disk in case of a crash -->
+        <flush_on_crash>false</flush_on_crash>
+
+        <!-- example of using a different storage policy for a system table -->
+        <!-- storage_policy>local_ssd</storage_policy -->
+    </query_log>
+    <allow_zookeeper_write>1</allow_zookeeper_write>
+    <listen_host>0.0.0.0</listen_host>
+    <http_port>8123</http_port>
+    <tcp_port>9000</tcp_port>
+    <interserver_http_port>9009</interserver_http_port>
+    <user_directories>
+        <users_xml>
+		<path>/etc/clickhouse-server/users.xml</path>
+        </users_xml>
+        <local_directory>
+            <path>/var/lib/clickhouse/access/</path>
+        </local_directory>
+    </user_directories>
+    <distributed_ddl>
+        <path>/clickhouse/task_queue/ddl</path>
+    </distributed_ddl>
+    <remote_servers>
+	    <toy>
+            <!--
+            <discovery>
+                <path>/clickhouse/discovery/toy</path>
+                <shard>01</shard>
+            </discovery>
+            -->            
+            <shard>
+                    <internal_replication>true</internal_replication>
+                    <replica>
+                        <host>clickhouse01</host>
+                        <port>9000</port>
+                    </replica>
+                    <replica>
+                        <host>clickhouse02</host>
+                        <port>9000</port>
+                    </replica>
+                </shard>
+            <shard>
+                <internal_replication>true</internal_replication>
+                    <replica>
+                        <host>clickhouse03</host>
+                        <port>9000</port>
+                    </replica>
+                    <replica>
+                        <host>clickhouse04</host>
+                        <port>9000</port>
+                    </replica>
+            </shard>
+        </toy>
+        <testcluster>
+            <discovery>
+                <path>/clickhouse/discovery/testcluster</path>
+                <shard>1</shard>
+            </discovery>
+        </testcluster>
+    </remote_servers>
+    <zookeeper>
+        <node>
+            <host>clickhouse-keeper</host>
+            <port>9181</port>
+    </node>
+            <session_timeout_ms>60000</session_timeout_ms>
+        <operation_timeout_ms>20000</operation_timeout_ms>
+    </zookeeper>
+    <macros>
+        <cluster>toy</cluster>
+        <shard>01</shard>
+        <replica>02</replica>
+    </macros>
+    <prometheus>
+        <endpoint>/metrics</endpoint>
+	<port>9116</port>
+
+        <metrics>true</metrics>
+        <events>true</events>
+        <asynchronous_metrics>true</asynchronous_metrics>
+        <status_info>true</status_info>
+    </prometheus>
+
+</clickhouse>

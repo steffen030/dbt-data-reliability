@@ -18,3 +18,7 @@
     {% do return(false) %}
 {% endmacro %}
 
+{% macro clickhouse__has_temp_table_support() %}
+    {# Currently not supported by dbt-clickhouse #}
+    {% do return(false) %}
+{% endmacro %}

@@ -1,6 +1,6 @@
 {{
   config(
-    materialized='incremental',
+    materialized=elementary.get_default_materialization(type='incremental'),
     transient=False,
     post_hook='{{ elementary.upload_dbt_seeds() }}',
     unique_key='unique_id',

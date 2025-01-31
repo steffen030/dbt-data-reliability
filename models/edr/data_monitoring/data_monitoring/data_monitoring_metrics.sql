@@ -1,6 +1,6 @@
 {{
   config(
-    materialized='incremental',
+    materialized=elementary.get_default_materialization(type='incremental'),
     unique_key='id',
     on_schema_change='append_new_columns',
     indexes=[{'columns': ['full_table_name', "column_name", "metric_name"]}] if target.type == "postgres" else [],

@@ -1,6 +1,6 @@
 {{
   config(
-    materialized = 'incremental',
+    materialized=elementary.get_default_materialization(type='incremental'),
     transient=False,
     unique_key = 'invocation_id',
     on_schema_change = 'append_new_columns',

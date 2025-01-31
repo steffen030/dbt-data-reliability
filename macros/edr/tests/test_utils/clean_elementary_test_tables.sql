@@ -51,6 +51,15 @@
     {% do return(queries) %}
 {% endmacro %}
 
+{% macro clickhouse__get_clean_elementary_test_tables_queries(test_table_relations) %}
+    {% set queries = [] %}    
+    {% for test_relation in test_table_relations %}
+        {% set on_cluster = on_cluster_clause(test_relation) %}
+        {% do queries.append("DROP TABLE IF EXISTS {} {}".format(test_relation, on_cluster)) %}
+    {% endfor %}
+    {% do return(queries) %}
+{% endmacro %}
+
 {% macro get_transaction_clean_elementary_test_tables_queries(test_table_relations) %}
     {% set query %}
         BEGIN TRANSACTION;

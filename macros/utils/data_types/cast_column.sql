@@ -21,6 +21,10 @@
     )
 {%- endmacro -%}
 
+{%- macro clickhouse__edr_cast_as_timestamp(timestamp_field) -%}
+    parseDateTime64BestEffort(cast({{ timestamp_field }} AS {{ elementary.edr_type_string() }}),6)
+{%- endmacro -%}
+
 {%- macro edr_cast_as_float(column) -%}
     cast({{ column }} as {{ elementary.edr_type_float() }})
 {%- endmacro -%}

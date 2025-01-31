@@ -133,3 +133,40 @@
     {%- endset %}
     {{ return(complete_buckets_cte) }}
 {% endmacro %}
+
+{% macro clickhouse__complete_buckets_cte(time_bucket, bucket_end_expr, min_bucket_start_expr, max_bucket_end_expr) %}
+    {%- set complete_buckets_cte %}
+        WITH
+            toUInt32({{ min_bucket_start_expr }}) AS start,
+            toUInt32({{ max_bucket_end_expr }}) AS end,
+            {{ time_bucket.count }} * 
+            {%- if time_bucket.period | lower == 'second' %}
+                1
+            {%- elif time_bucket.period | lower == 'minute' %}
+                60
+            {%- elif time_bucket.period | lower == 'hour' %}
+                3600
+            {%- elif time_bucket.period | lower == 'day' %}
+                86400
+            {%- elif time_bucket.period | lower == 'week' %}
+                604800
+            {%- elif time_bucket.period | lower == 'month' %}
+                2628000  -- Approximate average seconds in a month
+            {%- elif time_bucket.period | lower == 'quarter' %}
+                7884000  -- Approximate average seconds in a quarter
+            {%- elif time_bucket.period | lower == 'year' %}
+                31536000 -- Seconds in a year
+            {%- else %}
+                {{ exceptions.raise_compiler_error("Unsupported time bucket period: ".format(time_bucket.period)) }}
+            {%- endif %} AS interval_seconds
+        SELECT
+            edr_bucket_start as edr_bucket_start,
+            {{ bucket_end_expr }} AS edr_bucket_end
+        FROM (
+            SELECT
+                toDateTime(arrayJoin(arrayMap(x -> x, range(start, end, interval_seconds)))) AS edr_bucket_start
+        )
+        WHERE {{ bucket_end_expr }} <= {{ max_bucket_end_expr }}
+    {%- endset %}
+    {{ return(complete_buckets_cte) }}
+{% endmacro %}

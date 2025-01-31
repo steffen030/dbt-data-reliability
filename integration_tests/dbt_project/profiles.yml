@@ -1,0 +1,26 @@
+elementary_tests:
+  target: clickhouse
+  outputs:
+    postgres:
+      type: postgres
+      host: 127.0.0.1
+      port: 5432
+      user: admin
+      password: admin
+      dbname: postgres
+      schema: edr
+      threads: 32
+    clickhouse:
+      type: clickhouse
+      cluster: toy
+      host: localhost
+      port: 9001
+      user: root
+      verify: False
+      password: rootpass
+      schema: edr
+      driver: native
+      secure: False
+      cluster_mode: True
+      use_lw_deletes: True
+      send_receive_timeout: 30600 # 510 min

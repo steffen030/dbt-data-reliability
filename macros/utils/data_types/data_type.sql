@@ -152,3 +152,8 @@
 {% macro trino__edr_type_timestamp() %}
     timestamp(6)
 {% endmacro %}
+
+
+{% macro clickhouse__edr_type_timestamp() %}
+    timestamp
+{% endmacro %}

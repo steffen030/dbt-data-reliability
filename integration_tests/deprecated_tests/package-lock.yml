@@ -1,0 +1,5 @@
+packages:
+  - local: ../../
+  - package: dbt-labs/dbt_utils
+    version: 1.3.0
+sha1_hash: 31ab6d0c0f2c12e5eba02f23dfdb5ad74be70ced

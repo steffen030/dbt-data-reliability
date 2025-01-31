@@ -1,6 +1,6 @@
 {{
   config(
-    materialized = 'incremental',
+    materialized = elementary.get_default_materialization(type='incremental'),
     unique_key = 'source_freshness_execution_id',
     on_schema_change = 'append_new_columns',
     full_refresh=elementary.get_config_var('elementary_full_refresh'),

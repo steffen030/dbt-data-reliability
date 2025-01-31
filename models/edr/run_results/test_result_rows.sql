@@ -1,7 +1,7 @@
 -- indexes are not supported in all warehouses, relevant to postgres only
 {{
   config(
-    materialized = 'incremental',
+    materialized = elementary.get_default_materialization(type='incremental'),
     unique_key = 'elementary_test_results_id',
     on_schema_change = 'append_new_columns',
     indexes=[{'columns': ['created_at']}, {'columns': ['elementary_test_results_id']}] if target.type == "postgres" else [],

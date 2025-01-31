@@ -1,6 +1,6 @@
 {{
   config(
-    materialized = 'view',
+    materialized = elementary.get_default_materialization(type='view'),
     bind =False
   )
 }}

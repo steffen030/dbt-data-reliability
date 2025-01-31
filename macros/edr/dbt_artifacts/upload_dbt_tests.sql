@@ -139,6 +139,7 @@
         {% set primary_test_model_database, primary_test_model_schema = elementary.get_model_database_and_schema_from_test_node(node_dict) %}
     {%- endif -%}
 
+    {# TODO: Review the string conversion for test_params#}
     {% set original_file_path = node_dict.get('original_file_path') %}
     {% set flatten_test_metadata_dict = {
         'unique_id': node_dict.get('unique_id'),
@@ -148,7 +149,7 @@
         'severity': config_dict.get('severity'),
         'warn_if': config_dict.get('warn_if'),
         'error_if': config_dict.get('error_if'),
-        'test_params': test_kwargs,
+        'test_params': test_kwargs|string,
         'test_namespace': test_namespace,
         'test_original_name': test_original_name,
         'tags': elementary.filter_none_and_sort(tags),

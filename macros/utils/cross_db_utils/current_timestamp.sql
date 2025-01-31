@@ -22,10 +22,6 @@
     cast(current_timestamp() as timestamp)
 {% endmacro %}
 
-{% macro clickhouse__edr_current_timestamp() -%}
-    now()
-{%- endmacro -%}
-
 {% macro edr_current_timestamp_in_utc() -%}
     {{ adapter.dispatch('edr_current_timestamp_in_utc','elementary')() }}
 {%- endmacro %}
@@ -51,7 +47,11 @@
 {% endmacro %}
 
 {% macro clickhouse__edr_current_timestamp_in_utc() %}
-    toDateTime(toUInt32(toUnixTimestamp(now()) - 7 * 86400))
+    toDateTime(now(), 'UTC')::timestamp(6)
+{% endmacro %}
+
+{% macro clickhouse__edr_current_timestamp() %}
+    toDateTime(now(), timeZone())::timestamp(6)
 {% endmacro %}
 
 {% macro athena__edr_current_timestamp() -%}
